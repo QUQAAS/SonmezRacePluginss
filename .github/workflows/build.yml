@@ -1,0 +1,77 @@
+name: Build SonmezRacePlugin
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      server_ref:
+        description: 'AssettoServer tag/branch'
+        default: 'v0.0.55-pre44'
+      with_commands:
+        description: '/yaris komutunu (Commands.cs.optional) dahil et'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+env:
+  SERVER_REF: ${{ github.event.inputs.server_ref || 'v0.0.55-pre44' }}
+  WITH_COMMANDS: ${{ github.event.inputs.with_commands || 'false' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: AssettoServer ${{ env.SERVER_REF }} indir
+        uses: actions/checkout@v4
+        with:
+          repository: compujuckel/AssettoServer
+          ref: ${{ env.SERVER_REF }}
+          path: AssettoServer-src
+
+      - name: Plugin kaynaklarini sunucu deposunun icine koy
+        uses: actions/checkout@v4
+        with:
+          path: AssettoServer-src/SonmezRacePlugin
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Derle
+        working-directory: AssettoServer-src/SonmezRacePlugin
+        run: |
+          set -o pipefail
+          dotnet build SonmezRacePlugin.csproj -c Release -p:WithCommands=${{ env.WITH_COMMANDS }} 2>&1 | tee "$GITHUB_WORKSPACE/build.log"
+
+      - name: Paketle
+        run: |
+          mkdir -p package/plugins/SonmezRacePlugin package/cfg
+          cp AssettoServer-src/SonmezRacePlugin/bin/Release/net9.0/SonmezRacePlugin.dll package/plugins/SonmezRacePlugin/
+          cp AssettoServer-src/SonmezRacePlugin/cfg_plugin_sonmez_race_cfg.yml package/cfg/plugin_sonmez_race_cfg.yml
+          cp AssettoServer-src/SonmezRacePlugin/KURULUM.md package/
+          (cd package && zip -r ../SonmezRacePlugin-0.0.55-pre44.zip .)
+
+      - name: Build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
+          if-no-files-found: ignore
+
+      - name: Plugin paketi
+        uses: actions/upload-artifact@v4
+        with:
+          name: SonmezRacePlugin-0.0.55-pre44
+          path: SonmezRacePlugin-0.0.55-pre44.zip
+
+      - name: Release olustur (v* etiketi)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: SonmezRacePlugin-0.0.55-pre44.zip
