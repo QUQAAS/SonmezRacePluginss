@@ -58,8 +58,11 @@ jobs:
           set -o pipefail
           TFM=$(grep -oP '(?<=<TargetFramework>)[^<]+' ../AssettoServer/AssettoServer.csproj | head -1)
           echo "Sunucu TargetFramework: $TFM"
+          # eklentinin framework'unu sunucununkiyle esitle (restore dahil her adimda gecerli olsun diye csproj'u degistiriyoruz)
+          sed -i "s#<TargetFramework>[^<]*</TargetFramework>#<TargetFramework>$TFM</TargetFramework>#" SonmezRacePlugin.csproj
+          grep -n "TargetFramework" SonmezRacePlugin.csproj
           dotnet --list-sdks
-          dotnet build SonmezRacePlugin.csproj -c Release -p:TargetFramework=$TFM -p:WithCommands=${{ env.WITH_COMMANDS }} 2>&1 | tee "$GITHUB_WORKSPACE/build.log"
+          dotnet build SonmezRacePlugin.csproj -c Release -p:WithCommands=${{ env.WITH_COMMANDS }} 2>&1 | tee "$GITHUB_WORKSPACE/build.log"
 
       - name: Paketle
         run: |
