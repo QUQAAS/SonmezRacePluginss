@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- AssettoServer 0.0.55 (preview 44) -> net9.0 -->
-    <TargetFramework>net9.0</TargetFramework>
+    <!-- Workflow, bu degeri AssettoServer.csproj'daki TargetFramework ile otomatik esitler (pre44: net11.0) -->
+    <TargetFramework>net11.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>SonmezRacePlugin</RootNamespace>
@@ -13,6 +13,8 @@
     <!-- Bu klasor AssettoServer deposunun icinde, AssettoServer/ klasorunun yaninda durmali.
          GitHub Actions (.github/workflows/build.yml) bunu otomatik yapar. -->
     <ProjectReference Include="..\AssettoServer\AssettoServer.csproj" Private="false" ExcludeAssets="runtime" />
+    <!-- pre44: CarStatus, IOutgoingNetworkPacket vb. AssettoServer.Shared icinde, ayri referans gerekli -->
+    <ProjectReference Include="..\AssettoServer.Shared\AssettoServer.Shared.csproj" Private="false" ExcludeAssets="runtime" />
   </ItemGroup>
 
   <ItemGroup>
