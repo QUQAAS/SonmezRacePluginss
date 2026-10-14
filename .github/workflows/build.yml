@@ -26,7 +26,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: AssettoServer ${{ env.SERVER_REF }} indir
+      - name: AssettoServer indir
         uses: actions/checkout@v4
         with:
           repository: compujuckel/AssettoServer
@@ -38,20 +38,35 @@ jobs:
         with:
           path: AssettoServer-src/SonmezRacePlugin
 
+      - name: Sunucunun istedigi SDK / framework bilgisi
+        run: |
+          echo "--- global.json"; cat AssettoServer-src/global.json || true
+          echo "--- TargetFramework"; grep -n "TargetFramework" AssettoServer-src/AssettoServer/AssettoServer.csproj || true
+
+      # AssettoServer pre44 global.json'da .NET 11 SDK istiyor (preview surum)
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 9.0.x
+          dotnet-version: |
+            9.0.x
+            10.0.x
+            11.0.x
+          dotnet-quality: preview
 
       - name: Derle
         working-directory: AssettoServer-src/SonmezRacePlugin
         run: |
           set -o pipefail
-          dotnet build SonmezRacePlugin.csproj -c Release -p:WithCommands=${{ env.WITH_COMMANDS }} 2>&1 | tee "$GITHUB_WORKSPACE/build.log"
+          TFM=$(grep -oP '(?<=<TargetFramework>)[^<]+' ../AssettoServer/AssettoServer.csproj | head -1)
+          echo "Sunucu TargetFramework: $TFM"
+          dotnet --list-sdks
+          dotnet build SonmezRacePlugin.csproj -c Release -p:TargetFramework=$TFM -p:WithCommands=${{ env.WITH_COMMANDS }} 2>&1 | tee "$GITHUB_WORKSPACE/build.log"
 
       - name: Paketle
         run: |
+          DLL=$(find AssettoServer-src/SonmezRacePlugin/bin/Release -name SonmezRacePlugin.dll | head -1)
+          echo "Bulundu: $DLL"
           mkdir -p package/plugins/SonmezRacePlugin package/cfg
-          cp AssettoServer-src/SonmezRacePlugin/bin/Release/net9.0/SonmezRacePlugin.dll package/plugins/SonmezRacePlugin/
+          cp "$DLL" package/plugins/SonmezRacePlugin/
           cp AssettoServer-src/SonmezRacePlugin/cfg_plugin_sonmez_race_cfg.yml package/cfg/plugin_sonmez_race_cfg.yml
           cp AssettoServer-src/SonmezRacePlugin/KURULUM.md package/
           (cd package && zip -r ../SonmezRacePlugin-0.0.55-pre44.zip .)
