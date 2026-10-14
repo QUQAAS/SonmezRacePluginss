@@ -1,0 +1,16 @@
+# AssettoServer/cfg/plugin_sonmez_race_cfg.yml olarak kopyala (istege bagli, tum degerler varsayilan)
+MakasMinSpeedKmh: 80
+MakasMaxLateralMeters: 3.2
+MakasBasePoints: 20
+DriftMinSpeedKmh: 40
+DriftMinAngleDeg: 15
+DriftPointsPerSecond: 30
+YawMode: 0
+ComboWindowSeconds: 5
+MaxCombo: 3
+HornCount: 3
+HornWindowSeconds: 3
+RaceRadiusMeters: 200
+RaceLengthMeters: 2000
+RaceCountdownSeconds: 5
+RaceWinnerBonus: 500

@@ -1,0 +1,14 @@
+// Korna calismazsa yedek: /yaris yazinca 3 korna sayilir.  Kullanmak icin dosya adini Commands.cs yap.
+using AssettoServer.Commands;
+using Qmmands;
+
+namespace SonmezRacePlugin;
+
+public class SonmezRaceCommands : ACModuleBase
+{
+    private readonly SonmezRaceService _service;
+    public SonmezRaceCommands(SonmezRaceService service) { _service = service; }
+
+    [Command("yaris", "race")]
+    public void StartRace() => _service.TriggerRace(Context.Client, force: true);
+}
